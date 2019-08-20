@@ -10,6 +10,7 @@ use of this software.
 		    Let me know of any bugs and suggestions.
  */
 package net.fsp;
+
 import java.net.InetAddress;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -29,8 +30,7 @@ import java.util.Hashtable;
  * @version 1.0rc7
  * @since 1.0
  */
-public class FSPsession
-{
+public class FSPsession implements AutoCloseable {
 	private DatagramSocket socket;
 	private DatagramPacket udp;
 	private FSPpacket   packet;
@@ -206,15 +206,12 @@ public class FSPsession
 	 *
 	 * @since 1.0
 	 */
-	public void close()
-	{
-		if(socket!=null)
-			try
-			{
-				interact(FSPpacket.CC_BYE,0,null,0,0,null,0,0);
-				socket.close();
-			}
-			catch (Exception e) {}
+	@Override
+	public void close() throws Exception {
+		if(socket!=null) {
+			interact(FSPpacket.CC_BYE,0,null,0,0,null,0,0);
+			socket.close();
+		}
 
 		socket=null;
 		udp=null;
@@ -336,10 +333,12 @@ public class FSPsession
 	 * @since 1.0
 	 */
 	@Deprecated
-	public void finalize()
-	{
+	public void finalize() {
 		timeout=7000;
-		close();
+		try {
+			close();
+		} catch (Exception e) {
+		}
 	}
 
 	/**
